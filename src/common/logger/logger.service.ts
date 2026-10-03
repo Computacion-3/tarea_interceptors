@@ -17,10 +17,10 @@ export class AppLogger implements LoggerService, OnModuleDestroy {
         }
 
         const logFile = path.join(logDir, `app-${dateStamp}.log`);
-        // Abre el stream en modo append ('a')
         this.logStream = fs.createWriteStream(logFile, { flags: 'a' });
     }
 
+    //niveles de log
     log(message: string) {
         this.write('LOG', message);
     }
@@ -41,14 +41,18 @@ export class AppLogger implements LoggerService, OnModuleDestroy {
         this.write('VERBOSE', message);
     }
 
+    //registramos log asociado al correlation id (id de peticion, nivel de log, msj a registrar)
+    logWithTrace(correlationId: string, level: string, message: string) {
+        const formattedMessage = `[CorrelationID: ${correlationId}] ${message}`;
+        this.write(level.toUpperCase(), formattedMessage);
+    }
+
     private write(level: string, message: string, trace?: string) {
         const timestamp = new Date().toISOString();
         const formattedLog = `[${timestamp}] [${level}] ${message}${trace ? '\n[Stack Trace]: ' + trace : ''}\n`;
 
-        // Escritura persistente en disco
         this.logStream.write(formattedLog);
 
-        // Salida formateada en consola
         console.info(formattedLog.trim());
     }
 
